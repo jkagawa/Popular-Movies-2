@@ -1,0 +1,25 @@
+<resources>
+    <string name="app_name">Movies</string>
+
+    <string name="main_error_message">No data available</string>
+
+    <string name="rating_label">Rating:</string>
+    <string name="rating">---</string>
+
+    <string name="vote_count">---</string>
+
+    <string name="release_date_label">Release Date:</string>
+    <string name="release_date">---</string>
+
+    <string name="overview_label">Plot Summary:</string>
+    <string name="overview">---</string>
+
+    <string name="menu_popularity">Popular</string>.
+    <string name="menu_rating">Top Rated</string>
+    <string name="menu_favorite">Favorite</string>
+
+    <string name="description_poster">Poster Image</string>
+    <string name="description_backdrop">Backdrop Image</string>
+    <string name="description_star">Rating Star Image</string>
+
+</resources>
