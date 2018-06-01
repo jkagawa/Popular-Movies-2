@@ -123,6 +123,36 @@
             android:paddingBottom="20dp"
             android:textSize="18sp"/>
 
+        <TextView
+            android:id="@+id/detail_review_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/review_label"
+            app:layout_constraintTop_toBottomOf="@id/detail_overview"
+            android:paddingTop="5dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="20dp"
+            android:textSize="18sp"/>
+
+        <TextView
+            android:id="@+id/detail_review"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/review"
+            app:layout_constraintTop_toBottomOf="@id/detail_review_label"
+            android:paddingTop="5dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:paddingBottom="20dp"
+            android:textSize="18sp"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/recyclerview_videos"
+            app:layout_constraintTop_toBottomOf="@id/detail_review"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
     </android.support.constraint.ConstraintLayout>
 
 </ScrollView>

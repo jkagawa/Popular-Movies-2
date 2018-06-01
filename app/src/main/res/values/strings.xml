@@ -14,6 +14,12 @@
     <string name="overview_label">Plot Summary:</string>
     <string name="overview">---</string>
 
+    <string name="review_label">Reviews:</string>
+    <string name="review">---</string>
+
+    <string name="video_label">Videos:</string>
+    <string name="video_name">---</string>
+
     <string name="menu_popularity">Popular</string>.
     <string name="menu_rating">Top Rated</string>
     <string name="menu_favorite">Favorite</string>

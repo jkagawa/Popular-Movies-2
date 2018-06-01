@@ -21,7 +21,15 @@ public class NetworkUtils {
 
     final static String TOP_RATED_PATH = "top_rated";
 
+    final static String VIDEO_PATH = "videos";
+
+    final static String REVIEW_PATH = "reviews";
+
     final static String PARAM_API_KEY = "api_key";
+
+    final static String YOUTUBE_URL = "https://www.youtube.com/watch";
+
+    final static String PARAM_VIDEO = "v";
 
     //Build URL to query for popular movies
     public static URL buildPopularUrl(String apiKey) {
@@ -62,6 +70,58 @@ public class NetworkUtils {
         imagePath = imagePath.replace("/", "");
         Uri builtUri = Uri.parse("https://image.tmdb.org/t/p/"+width).buildUpon()
                 .appendPath(imagePath)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    //Build URL to query for trailer videos
+    public static URL buildVideoJSONUrl(String apiKey, String movieID) {
+        Uri builtUri = Uri.parse(MOVIE_DB_URL).buildUpon()
+                .appendPath(movieID)
+                .appendPath(VIDEO_PATH)
+                .appendQueryParameter(PARAM_API_KEY, apiKey)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    //Build URL to query for reviews
+    public static URL buildReviewJSONUrl(String apiKey, String movieID) {
+        Uri builtUri = Uri.parse(MOVIE_DB_URL).buildUpon()
+                .appendPath(movieID)
+                .appendPath(REVIEW_PATH)
+                .appendQueryParameter(PARAM_API_KEY, apiKey)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    //Build URL for video trailers
+    public static URL buildYouTubeUrl(String videoKey) {
+        Uri builtUri = Uri.parse(YOUTUBE_URL).buildUpon()
+                .appendQueryParameter(PARAM_VIDEO, videoKey)
                 .build();
 
         URL url = null;

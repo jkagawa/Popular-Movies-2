@@ -25,6 +25,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieAdapterOnClickHandler {
 
+    private List<String> mMovieID = new ArrayList<>();
     private List<String> mVoteCounts = new ArrayList<>();
     private List<String> mVoteAverage = new ArrayList<>();
     private List<String> mTitle = new ArrayList<>();
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private static final int NUMBER_OF_ITEMS = 100;
 
-    final static String API_KEY = "INSERT-API-KEY-HERE";
+    public final static String API_KEY = "INSERT-API-KEY-HERE";
 
     //private Toast mToast;
 
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         mToast.makeText(this, message, Toast.LENGTH_SHORT).show();*/
 
         Intent movieDetailIntent = new Intent(MainActivity.this, DetailActivity.class);
+        movieDetailIntent.putExtra("EXTRA_MOVIE_ID", mMovieID.get(position));
         movieDetailIntent.putExtra("EXTRA_RATING_COUNT", mVoteCounts.get(position));
         movieDetailIntent.putExtra("EXTRA_RATING", mVoteAverage.get(position));
         movieDetailIntent.putExtra("EXTRA_TITLE", mTitle.get(position));
@@ -209,6 +211,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                     String releaseDate = android.text.TextUtils.join(", ", releaseDateList);
                     */
 
+                    mMovieID = idList;
                     mVoteCounts = voteCountsList;
                     mVoteAverage = voteAverageList;
                     mTitle = titleList;
