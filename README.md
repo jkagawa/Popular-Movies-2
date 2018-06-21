@@ -2,4 +2,4 @@
 
 ### Please Note:
 
-I have removed the API key from the file. You may insert it in line 82 (constant API_KEY) of MainActivity.java
+The API key has been removed from the file. Please insert it in line 82 of MainActivity.java file (constant API_KEY).
