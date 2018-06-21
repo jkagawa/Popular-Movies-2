@@ -31,6 +31,10 @@ public class NetworkUtils {
 
     final static String PARAM_VIDEO = "v";
 
+    final static String YOUTUBE_IMAGE_URL = "https://img.youtube.com/vi";
+
+    final static String YOUTUBE_IMAGE_URL_END = "maxresdefault.jpg";
+
     //Build URL to query for popular movies
     public static URL buildPopularUrl(String apiKey) {
         Uri builtUri = Uri.parse(MOVIE_DB_URL).buildUpon()
@@ -122,6 +126,23 @@ public class NetworkUtils {
     public static URL buildYouTubeUrl(String videoKey) {
         Uri builtUri = Uri.parse(YOUTUBE_URL).buildUpon()
                 .appendQueryParameter(PARAM_VIDEO, videoKey)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        return url;
+    }
+
+    //Build URL for video image
+    public static URL buildVideoImageUrl(String videoKey) {
+        Uri builtUri = Uri.parse(YOUTUBE_IMAGE_URL).buildUpon()
+                .appendPath(videoKey)
+                .appendPath(YOUTUBE_IMAGE_URL_END)
                 .build();
 
         URL url = null;

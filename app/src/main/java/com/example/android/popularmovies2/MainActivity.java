@@ -1,6 +1,8 @@
 package com.example.android.popularmovies2;
 
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -9,9 +11,13 @@ import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
+import com.example.android.popularmovies2.data.FavoriteContract;
+import com.example.android.popularmovies2.data.FavoriteDbHelper;
 import com.example.android.popularmovies2.utilities.NetworkUtils;
 
 import org.json.JSONArray;
@@ -37,6 +43,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     private MovieAdapter mMovieAdapter;
     private RecyclerView mRecyclerView;
 
+    public static final String RESULTS_KEY = "results";
     public static final String VOTE_COUNT_KEY = "vote_count";
     public static final String ID_KEY = "id";
     public static final String VIDEO_KEY = "video";
@@ -52,19 +59,36 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     public static final String OVERVIEW_KEY = "overview";
     public static final String RELEASE_DATE_KEY = "release_date";
 
+    public static final String EXTRA_MOVIE_ID_KEY = "EXTRA_MOVIE_ID";
+    public static final String EXTRA_RATING_COUNT_KEY = "EXTRA_RATING_COUNT";
+    public static final String EXTRA_RATING_KEY = "EXTRA_RATING";
+    public static final String EXTRA_TITLE_KEY = "EXTRA_TITLE";
+    public static final String EXTRA_POSTER_KEY = "EXTRA_POSTER";
+    public static final String EXTRA_BACKDROP_KEY = "EXTRA_BACKDROP";
+    public static final String EXTRA_OVERVIEW_KEY = "EXTRA_OVERVIEW";
+    public static final String EXTRA_RELEASE_DATE_KEY = "EXTRA_RELEASE_DATE";
+
+    private static final String ACTIVITY_LABEL_POPULAR = "Popular Movies";
+    private static final String ACTIVITY_LABEL_TOP_RATED = "Top Rated Movies";
+    private static final String ACTIVITY_LABEL_FAVORITES = "Your Favorites";
+
     final static int SORT_POPULARITY_KEY = 1;
     final static int SORT_RATING_KEY = 2;
     final static int SORT_FAVORITE_KEY = 3;
+    public static int SAVE_SORT_KEY;
 
     private static final int NUMBER_OF_ITEMS = 100;
 
     public final static String API_KEY = "INSERT-API-KEY-HERE";
 
-    //private Toast mToast;
+    private Toast mToast;
 
     final static int SORT_POPULARITY_INDEX = 0;
     final static int SORT_RATING_INDEX = 1;
     final static int SORT_FAVORITE_INDEX = 2;
+
+    private SQLiteDatabase mDatabase;
+    private Cursor mCursor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +96,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         setContentView(R.layout.activity_main);
 
         mRecyclerView = findViewById(R.id.recyclerview_movies);
-
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -99,13 +122,27 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void makeUrlQuery(int sortKey) {
+
         URL popularUrl = NetworkUtils.buildPopularUrl(API_KEY);
         URL topRatedUrl = NetworkUtils.buildTopRatedUrl(API_KEY);
         if(sortKey == 1) {
+            SAVE_SORT_KEY = 1;
+            setTitle(ACTIVITY_LABEL_POPULAR);
             new UrlQueryTask().execute(popularUrl);
         }
         else if(sortKey == 2) {
+            SAVE_SORT_KEY = 2;
+            setTitle(ACTIVITY_LABEL_TOP_RATED);
             new UrlQueryTask().execute(topRatedUrl);
+        }
+        else if(sortKey == 3) {
+            SAVE_SORT_KEY = 3;
+            setTitle(ACTIVITY_LABEL_FAVORITES);
+            FavoriteDbHelper dbHelper = new FavoriteDbHelper(this);
+            mDatabase = dbHelper.getWritableDatabase();
+            mCursor = getAllFavorites();
+
+            getFavorites();
         }
 
     }
@@ -113,21 +150,24 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     @Override
     public void onClick(int position) {
 
-        /*if(mToast!=null) {
+        /*
+        if(mToast!=null) {
+
             mToast.cancel();
         }
-        String message = "Movie "+(position+1)+" selected";
-        mToast.makeText(this, message, Toast.LENGTH_SHORT).show();*/
+        String message = "Number of movies: "+(position+1);
+        mToast.makeText(this, message, Toast.LENGTH_SHORT).show();
+        */
 
         Intent movieDetailIntent = new Intent(MainActivity.this, DetailActivity.class);
-        movieDetailIntent.putExtra("EXTRA_MOVIE_ID", mMovieID.get(position));
-        movieDetailIntent.putExtra("EXTRA_RATING_COUNT", mVoteCounts.get(position));
-        movieDetailIntent.putExtra("EXTRA_RATING", mVoteAverage.get(position));
-        movieDetailIntent.putExtra("EXTRA_TITLE", mTitle.get(position));
-        movieDetailIntent.putExtra("EXTRA_POSTER", mPoster.get(position));
-        movieDetailIntent.putExtra("EXTRA_BACKDROP", mBackdropPath.get(position));
-        movieDetailIntent.putExtra("EXTRA_OVERVIEW", mOverview.get(position));
-        movieDetailIntent.putExtra("EXTRA_RELEASE_DATE", mReleaseDate.get(position));
+        movieDetailIntent.putExtra(EXTRA_MOVIE_ID_KEY, mMovieID.get(position));
+        movieDetailIntent.putExtra(EXTRA_RATING_COUNT_KEY, mVoteCounts.get(position));
+        movieDetailIntent.putExtra(EXTRA_RATING_KEY, mVoteAverage.get(position));
+        movieDetailIntent.putExtra(EXTRA_TITLE_KEY, mTitle.get(position));
+        movieDetailIntent.putExtra(EXTRA_POSTER_KEY, mPoster.get(position));
+        movieDetailIntent.putExtra(EXTRA_BACKDROP_KEY, mBackdropPath.get(position));
+        movieDetailIntent.putExtra(EXTRA_OVERVIEW_KEY, mOverview.get(position));
+        movieDetailIntent.putExtra(EXTRA_RELEASE_DATE_KEY, mReleaseDate.get(position));
         startActivity(movieDetailIntent);
 
     }
@@ -156,7 +196,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                 jsonFromUrl = s;
                 try {
                     JSONObject json = new JSONObject(jsonFromUrl);
-                    JSONArray results = json.getJSONArray("results");
+                    JSONArray results = json.getJSONArray(RESULTS_KEY);
 
                     List<String> voteCountsList = new ArrayList<>();
                     List<String> idList = new ArrayList<>();
@@ -229,6 +269,68 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
     }
 
+    public void getFavorites() {
+
+        List<String> voteCountsList = new ArrayList<>();
+        List<String> idList = new ArrayList<>();
+        List<String> videoList = new ArrayList<>();
+        List<String> voteAverageList = new ArrayList<>();
+        List<String> titleList = new ArrayList<>();
+        List<String> popularityList = new ArrayList<>();
+        List<String> posterPathList = new ArrayList<>();
+        List<String> originalLanguageList = new ArrayList<>();
+        List<String> originalTitleList = new ArrayList<>();
+        List<String> genreIdsList = new ArrayList<>();
+        List<String> backdropPathList = new ArrayList<>();
+        List<String> adultList = new ArrayList<>();
+        List<String> overviewList = new ArrayList<>();
+        List<String> releaseDateList = new ArrayList<>();
+
+        if(mCursor != null) {
+            mCursor.moveToFirst();
+
+            for(int i=0; i<mCursor.getCount(); i++) {
+                String title = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_TITLE));
+                String movieID = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_MOVIE_ID));
+                String posterPath = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_POSTER));
+                String synopsis = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_SYNOPSIS));
+                String voteAverage = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_USER_RATING));
+                String voteCounts = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_USER_RATING_COUNT));
+                String backdropPath = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_BACKDROP));
+                String releaseDate = mCursor.getString(mCursor.getColumnIndex(FavoriteContract.FavoriteEntry.COLUMN_RELEASE_DATE));
+
+                idList.add(movieID);
+                voteCountsList.add(voteCounts);
+                voteAverageList.add(voteAverage);
+                titleList.add(title);
+                posterPathList.add(posterPath);
+                backdropPathList.add(backdropPath);
+                overviewList.add(synopsis);
+                releaseDateList.add(releaseDate);
+
+                mCursor.moveToNext();
+
+                //Log.i("Info", "voteAverageList size is " + voteAverageList.size());
+            }
+
+            mMovieID = idList;
+            //mVoteCounts = voteCountsList;
+            mVoteAverage = voteAverageList;
+            mTitle = titleList;
+            mPoster = posterPathList;
+            mBackdropPath = backdropPathList;
+            mOverview = overviewList;
+            mReleaseDate = releaseDateList;
+
+            //mCursor.close();
+
+        }
+
+        mMovieAdapter.setData(posterPathList, voteAverageList, popularityList);
+
+
+
+    }
 
     private Menu menu1 = null;
 
@@ -334,10 +436,39 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             spanString3.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.white)), 0, spanString3.length(), 0);
             item3.setTitle(spanString3);
 
+            makeUrlQuery(SORT_FAVORITE_KEY);
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private Cursor getAllFavorites() {
+
+        return getContentResolver().query(FavoriteContract.FavoriteEntry.CONTENT_URI,
+                null,
+                null,
+                null,
+                FavoriteContract.FavoriteEntry.COLUMN_TIMESTAMP);
+
+        /*return mDatabase.query(
+                FavoriteContract.FavoriteEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                FavoriteContract.FavoriteEntry.COLUMN_TIMESTAMP
+        );
+        */
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(SAVE_SORT_KEY==3) {
+            makeUrlQuery(SAVE_SORT_KEY);
+        }
     }
 
 }

@@ -2,13 +2,18 @@ package com.example.android.popularmovies2;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Point;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -56,18 +61,40 @@ class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHolder> {
     @Override
     public void onBindViewHolder(@NonNull final VideoViewHolder holder, int position) {
 
-        //Context context = holder.videoKeyView.getContext();
+        final Context context = holder.videoNameView.getContext();
 
-        URL youtubeURL = NetworkUtils.buildYouTubeUrl(mVideoKey.get(position));
+        URL imageURL = NetworkUtils.buildVideoImageUrl(mVideoKey.get(position));
+
+        Picasso.with(context)
+                .load(imageURL.toString())
+                .placeholder(R.drawable.placeholder_backdrop)
+                .error(R.drawable.no_image_backdrop)
+                .into(holder.videoThumbnailView);
 
         /*
-        videoKeyView.setOnClickListener(new View.OnClickListener() {
+        int imageWidth = holder.videoThumbnailView.getDrawable().getIntrinsicWidth();
+        int imageHeight = holder.videoThumbnailView.getDrawable().getIntrinsicHeight();
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        WindowManager windowManger = (WindowManager)context.getSystemService(Context.WINDOW_SERVICE);
+        windowManger.getDefaultDisplay().getMetrics(displayMetrics);
+        int width = displayMetrics.widthPixels;
+        */
+
+        ViewGroup.LayoutParams params = holder.videoThumbnailView.getLayoutParams();
+        params.width = 640;
+        params.height = 360;
+        holder.videoThumbnailView.setLayoutParams(params);
+
+        final URL youtubeURL = NetworkUtils.buildYouTubeUrl(mVideoKey.get(position));
+
+        holder.videoThumbnailView.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeURL)));
+
+                context.startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(youtubeURL.toString())));
                 Log.i("Video", "Video Playing....");
             }
         });
-        */
 
         holder.videoNameView.setText(mVideoNameList.get(position));
 
@@ -86,14 +113,18 @@ class VideoAdapter extends RecyclerView.Adapter<VideoAdapter.VideoViewHolder> {
 
     class VideoViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
-        //final Button videoKeyView;
         final TextView videoNameView;
+        final ImageView videoThumbnailView;
+
+        final TextView videoLabelView;
 
         public VideoViewHolder(View itemView) {
             super(itemView);
 
-            //videoKeyView = itemView.findViewById(R.id.button);
             videoNameView = itemView.findViewById(R.id.detail_video_name);
+            videoThumbnailView = itemView.findViewById(R.id.detail_video_thumbnail);
+
+            videoLabelView = itemView.findViewById(R.id.detail_video_label);
 
             itemView.setOnClickListener(this);
         }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="text_size_small">16sp</dimen>
+    <dimen name="text_size_medium">18sp</dimen>
+
+    <dimen name="padding_margin_level_base">2dp</dimen>
+    <dimen name="padding_margin_level_1">5dp</dimen>
+    <dimen name="padding_margin_level_2">10dp</dimen>
+    <dimen name="padding_margin_level_2b">15dp</dimen>
+    <dimen name="padding_margin_level_3">20dp</dimen>
+    <dimen name="padding_margin_level_4">30dp</dimen>
+
+    <dimen name="backdrop_max_height">200dp</dimen>
+    <dimen name="review_height">300dp</dimen>
+
+    <dimen name="button_margin">27dp</dimen>
+
+</resources>
